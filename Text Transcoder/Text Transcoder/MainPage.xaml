@@ -13,7 +13,7 @@
     <Page.Resources>
 
         <!-- TODO: Delete this line if the key AppName is declared in App.xaml -->
-        <x:String x:Key="AppName">My Application</x:String>
+        <x:String x:Key="AppName">BabellessConverter</x:String>
     </Page.Resources>
 
     <!--
@@ -36,18 +36,20 @@
             <Button x:Name="backButton" Click="GoBack" IsEnabled="{Binding Frame.CanGoBack, ElementName=pageRoot}" Style="{StaticResource BackButtonStyle}"/>
             <TextBlock x:Name="pageTitle" Grid.Column="1" Text="{StaticResource AppName}" Style="{StaticResource PageHeaderTextStyle}"/>
         </Grid>
-        <ComboBox x:Name="FromEncoding" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120" Margin="83,40,0,0" Grid.Row="1" SelectionChanged="EncodingSelectionChanged" />
-        <ComboBox x:Name="ToEncoding" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120" Margin="83,87,0,0" Grid.Row="1" SelectionChanged="EncodingSelectionChanged" />
-        <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Margin="235,40,0,0" Grid.Row="1">
+        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="The files are written in:" VerticalAlignment="Top" Margin="83,49,0,0" Grid.Row="1" FontSize="18"/>
+        <ComboBox x:Name="FromEncoding" HorizontalAlignment="Left" VerticalAlignment="Top" Width="286" Margin="83,76,0,0" Grid.Row="1" SelectionChanged="FromEncoding_SelectionChanged" />
+        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="I want to rewrite it in:" VerticalAlignment="Top" Margin="83,113,0,0" Grid.Row="1" FontSize="18"/>
+        <ComboBox x:Name="ToEncoding" HorizontalAlignment="Left" VerticalAlignment="Top" Width="286" Margin="83,140,0,0" Grid.Row="1" SelectionChanged="ToEncoding_SelectionChanged" />
+        <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Margin="399,49,0,0" Grid.Row="1">
             <TextBlock Text="Encoding Name&#xD;&#xA;Displayed by:" FontSize="16" />
             <RadioButton x:Name="RadioLN" Content="Long Name" GroupName="SortMethod" Checked="RadioButtonLN_Checked" />
             <RadioButton x:Name="RadioCP" Content="Code Page Number" GroupName="SortMethod" Checked="RadioButtonCP_Checked" />
             <RadioButton x:Name="RadioSN" Content="Short Name" GroupName="SortMethod" Checked="RadioButtonSN_Checked" />
         </StackPanel>
-        <Button x:Name="loadButton" Content="Load" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="312,190,0,0" Grid.Row="1" Click="Button_Click" IsEnabled="False"/>
-        <TextBox x:Name="fileExtensionBox" HorizontalAlignment="Left" TextWrapping="Wrap" Text=".txt" VerticalAlignment="Top" Margin="190,190,0,0" Grid.Row="1" Height="38" Width="100" FontSize="18"/>
-        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="File Extension(s)" VerticalAlignment="Top" Margin="53,206,0,0" Grid.Row="1" FontSize="18"/>
-        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Write it as '.txt' or '.txt,.smi' for multilpe extensions" VerticalAlignment="Top" Margin="53,246,0,0" Grid.Row="1" FontSize="18"/>
+        <Button x:Name="loadButton" Content="Load" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="342,193,0,0" Grid.Row="1" Click="Button_Click" IsEnabled="False"/>
+        <TextBox x:Name="fileExtensionBox" HorizontalAlignment="Left" TextWrapping="Wrap" Text=".txt" VerticalAlignment="Top" Margin="220,193,0,0" Grid.Row="1" Height="38" Width="100" FontSize="18" TextChanged="fileExtensionBox_TextChanged"/>
+        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="File Extension(s)" VerticalAlignment="Top" Margin="83,209,0,0" Grid.Row="1" FontSize="18"/>
+        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Write it as '.txt' or '.txt,.smi' for multilpe extensions" VerticalAlignment="Top" Margin="83,249,0,0" Grid.Row="1" FontSize="18"/>
 
         <VisualStateManager.VisualStateGroups>
 
