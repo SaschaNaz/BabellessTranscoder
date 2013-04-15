@@ -36,7 +36,7 @@
             <Button x:Name="backButton" Click="GoBack" IsEnabled="{Binding Frame.CanGoBack, ElementName=pageRoot}" Style="{StaticResource BackButtonStyle}"/>
             <TextBlock x:Name="pageTitle" Grid.Column="1" Text="{StaticResource AppName}" Style="{StaticResource PageHeaderTextStyle}"/>
         </Grid>
-        <ComboBox x:Name="FromEncoding"  HorizontalAlignment="Left" VerticalAlignment="Top" Width="120" Margin="83,40,0,0" Grid.Row="1" SelectionChanged="EncodingSelectionChanged" />
+        <ComboBox x:Name="FromEncoding" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120" Margin="83,40,0,0" Grid.Row="1" SelectionChanged="EncodingSelectionChanged" />
         <ComboBox x:Name="ToEncoding" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120" Margin="83,87,0,0" Grid.Row="1" SelectionChanged="EncodingSelectionChanged" />
         <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Margin="235,40,0,0" Grid.Row="1">
             <TextBlock Text="Encoding Name&#xD;&#xA;Displayed by:" FontSize="16" />

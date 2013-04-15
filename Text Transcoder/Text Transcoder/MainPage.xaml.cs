@@ -26,11 +26,11 @@ namespace Text_Transcoder
     /// </summary>
     public sealed partial class MainPage : Text_Transcoder.Common.LayoutAwarePage
     {
-        struct EncodingInfo
+        class EncodingInfo
         {
-            public UInt16 CodePage;
-            public String Name;
-            public String DisplayName;
+            public UInt16 CodePage { get; set; }
+            public String Name { get; set; }
+            public String DisplayName { get; set; }
         }
         static Int32 compareEncodingInfoByCodePage(EncodingInfo e1, EncodingInfo e2)
         {
@@ -212,83 +212,36 @@ namespace Text_Transcoder
             encodinglist = encodings.ToList();
             #endregion
             RadioLN.IsChecked = true;
+            FromEncoding.ItemsSource = ToEncoding.ItemsSource = encodinglist;
             //System.Text.Encoding.GetEncoding(
         }
 
         Comparison<EncodingInfo> comparisonMethodSelected;
         void Sort(Comparison<EncodingInfo> comparison)
         {
-            Nullable<EncodingInfo> selectedFromEncoding = null;
-            Nullable<EncodingInfo> selectedToEncoding = null;
+            EncodingInfo selectedFromEncoding = null;
+            EncodingInfo selectedToEncoding = null;
             if (comparisonMethodSelected != null)
             {
                 if (FromEncoding.SelectedIndex != -1)
-                {
-                    if (comparisonMethodSelected == compareEncodingInfoByCodePage)
-                        selectedFromEncoding = encodinglist.Find(delegate(EncodingInfo info) { if (info.CodePage == (UInt16)FromEncoding.SelectedItem) return true; else return false; });
-                    else if (comparisonMethodSelected == compareEncodingInfoByDisplayName)
-                        selectedFromEncoding = encodinglist.Find(delegate(EncodingInfo info) { if (info.DisplayName == (String)FromEncoding.SelectedItem) return true; else return false; });
-                    else if (comparisonMethodSelected == compareEncodingInfoByName)
-                        selectedFromEncoding = encodinglist.Find(delegate(EncodingInfo info) { if (info.Name == (String)FromEncoding.SelectedItem) return true; else return false; });
-                }
+                    selectedFromEncoding = (EncodingInfo)FromEncoding.SelectedItem;
                 if (ToEncoding.SelectedIndex != -1)
-                {
-                    if (comparisonMethodSelected == compareEncodingInfoByCodePage)
-                        selectedToEncoding = encodinglist.Find(delegate(EncodingInfo info) { if (info.CodePage == (UInt16)ToEncoding.SelectedItem) return true; else return false; });
-                    else if (comparisonMethodSelected == compareEncodingInfoByDisplayName)
-                        selectedToEncoding = encodinglist.Find(delegate(EncodingInfo info) { if (info.DisplayName == (String)ToEncoding.SelectedItem) return true; else return false; });
-                    else if (comparisonMethodSelected == compareEncodingInfoByName)
-                        selectedToEncoding = encodinglist.Find(delegate(EncodingInfo info) { if (info.Name == (String)ToEncoding.SelectedItem) return true; else return false; });
-                }
+                    selectedToEncoding = (EncodingInfo)ToEncoding.SelectedItem;
             }
+            FromEncoding.SelectedItem = ToEncoding.SelectedItem = null;
                 
             encodinglist.Sort(comparison);
-            FromEncoding.Items.Clear();
-            ToEncoding.Items.Clear();
-
             if (comparison == compareEncodingInfoByCodePage)
-            {
-                foreach(EncodingInfo info in encodinglist)
-                {
-                    FromEncoding.Items.Add(info.CodePage);
-                    ToEncoding.Items.Add(info.CodePage);
-                }
-            }
-            else if (comparison == compareEncodingInfoByDisplayName)
-            {
-                foreach(EncodingInfo info in encodinglist)
-                {
-                    FromEncoding.Items.Add(info.DisplayName);
-                    ToEncoding.Items.Add(info.DisplayName);
-                }
-            }
+                FromEncoding.DisplayMemberPath = ToEncoding.DisplayMemberPath = "CodePage";
             else if (comparison == compareEncodingInfoByName)
-            {
-                foreach (EncodingInfo info in encodinglist)
-                {
-                    FromEncoding.Items.Add(info.Name);
-                    ToEncoding.Items.Add(info.Name);
-                }
-            }
+                FromEncoding.DisplayMemberPath = ToEncoding.DisplayMemberPath = "Name";
+            else if (comparison == compareEncodingInfoByDisplayName)
+                FromEncoding.DisplayMemberPath = ToEncoding.DisplayMemberPath = "DisplayName";
 
             if (selectedFromEncoding != null)
-            {
-                if (comparison == compareEncodingInfoByCodePage)
-                    FromEncoding.SelectedItem = selectedFromEncoding.Value.CodePage;
-                else if (comparison == compareEncodingInfoByDisplayName)
-                    FromEncoding.SelectedItem = selectedFromEncoding.Value.DisplayName;
-                else if (comparison == compareEncodingInfoByName)
-                    FromEncoding.SelectedItem = selectedFromEncoding.Value.Name;
-            }
+                FromEncoding.SelectedItem = selectedFromEncoding;
             if (selectedToEncoding != null)
-            {
-                if (comparison == compareEncodingInfoByCodePage)
-                    ToEncoding.SelectedItem = selectedToEncoding.Value.CodePage;
-                else if (comparison == compareEncodingInfoByDisplayName)
-                    ToEncoding.SelectedItem = selectedToEncoding.Value.DisplayName;
-                else if (comparison == compareEncodingInfoByName)
-                    ToEncoding.SelectedItem = selectedToEncoding.Value.Name;
-            }
+                ToEncoding.SelectedItem = selectedToEncoding;
             comparisonMethodSelected = comparison;
         }
 
@@ -375,7 +328,7 @@ namespace Text_Transcoder
                     }
                 }
             }
-            if (bigFileExist == null)
+            if (bigFileExist)
             {
                 var dialog = new Windows.UI.Popups.MessageDialog("One of the file is bigger than 4MB. There is a possibility that there is the file which is not a text. Will you continue?");
                 dialog.Commands.Add(new Windows.UI.Popups.UICommand("Yes", null));
