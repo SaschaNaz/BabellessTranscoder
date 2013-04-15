@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -26,6 +27,9 @@ namespace Text_Transcoder
     /// </summary>
     public sealed partial class MainPage : Text_Transcoder.Common.LayoutAwarePage
     {
+        Windows.Storage.ApplicationDataContainer localSettings =
+            Windows.Storage.ApplicationData.Current.LocalSettings;
+
         class EncodingInfo
         {
             public UInt16 CodePage { get; set; }
@@ -211,23 +215,17 @@ namespace Text_Transcoder
             };
             encodinglist = encodings.ToList();
             #endregion
-            RadioLN.IsChecked = true;
             FromEncoding.ItemsSource = ToEncoding.ItemsSource = encodinglist;
-            //System.Text.Encoding.GetEncoding(
         }
 
-        Comparison<EncodingInfo> comparisonMethodSelected;
         void Sort(Comparison<EncodingInfo> comparison)
         {
             EncodingInfo selectedFromEncoding = null;
             EncodingInfo selectedToEncoding = null;
-            if (comparisonMethodSelected != null)
-            {
-                if (FromEncoding.SelectedIndex != -1)
-                    selectedFromEncoding = (EncodingInfo)FromEncoding.SelectedItem;
-                if (ToEncoding.SelectedIndex != -1)
-                    selectedToEncoding = (EncodingInfo)ToEncoding.SelectedItem;
-            }
+            if (FromEncoding.SelectedIndex != -1)
+                selectedFromEncoding = (EncodingInfo)FromEncoding.SelectedItem;
+            if (ToEncoding.SelectedIndex != -1)
+                selectedToEncoding = (EncodingInfo)ToEncoding.SelectedItem;
             FromEncoding.SelectedItem = ToEncoding.SelectedItem = null;
                 
             encodinglist.Sort(comparison);
@@ -242,9 +240,9 @@ namespace Text_Transcoder
                 FromEncoding.SelectedItem = selectedFromEncoding;
             if (selectedToEncoding != null)
                 ToEncoding.SelectedItem = selectedToEncoding;
-            comparisonMethodSelected = comparison;
         }
 
+        Boolean loadCompleted;
         /// <summary>
         /// Populates the page with content passed during navigation.  Any saved state is also
         /// provided when recreating a page from a prior session.
@@ -256,6 +254,33 @@ namespace Text_Transcoder
         /// session.  This will be null the first time a page is visited.</param>
         protected override void LoadState(Object navigationParameter, Dictionary<String, Object> pageState)
         {
+            if (localSettings.Values.ContainsKey("fromEncoding"))
+                FromEncoding.SelectedItem = encodinglist.Find(delegate(EncodingInfo info) { if (info.CodePage == (UInt16)localSettings.Values["fromEncoding"]) return true; else return false; });
+            if (localSettings.Values.ContainsKey("toEncoding"))
+                ToEncoding.SelectedItem = encodinglist.Find(delegate(EncodingInfo info) { if (info.CodePage == (UInt16)localSettings.Values["toEncoding"]) return true; else return false; });
+            else
+                ToEncoding.SelectedItem = encodinglist.Find(delegate(EncodingInfo info) { if (info.CodePage == 1200) return true; else return false; });
+            if (localSettings.Values.ContainsKey("extensions"))
+                fileExtensionBox.Text = (String)localSettings.Values["extensions"];
+            if (localSettings.Values.ContainsKey("DisplayMethod"))
+            {
+                switch ((String)localSettings.Values["DisplayMethod"])
+                {
+                    case "LongName":
+                        RadioLN.IsChecked = true;
+                        break;
+                    case "ShortName":
+                        RadioSN.IsChecked = true;
+                        break;
+                    case "CodePage":
+                        RadioCP.IsChecked = true;
+                        break;
+                }
+            }
+            else
+                RadioLN.IsChecked = true;
+
+            loadCompleted = true;
         }
 
         /// <summary>
@@ -270,16 +295,22 @@ namespace Text_Transcoder
 
         private void RadioButtonCP_Checked(object sender, RoutedEventArgs e)
         {
+            if (loadCompleted)
+                localSettings.Values["DisplayMethod"] = "CodePage";
             Sort(compareEncodingInfoByCodePage);
         }
 
         private void RadioButtonLN_Checked(object sender, RoutedEventArgs e)
         {
+            if (loadCompleted)
+                localSettings.Values["DisplayMethod"] = "LongName";
             Sort(compareEncodingInfoByDisplayName);
         }
 
         private void RadioButtonSN_Checked(object sender, RoutedEventArgs e)
         {
+            if (loadCompleted)
+                localSettings.Values["DisplayMethod"] = "ShortName";
             Sort(compareEncodingInfoByName);
         }
 
@@ -289,16 +320,21 @@ namespace Text_Transcoder
             //이걸로 바인딩 붙여서 개선하기...
             //EncodingInfo 직접 ComboBox에 넣도록.
             //그에 따라 관련 코드 다 개선
+            EncodingInfo fromEncodingInfo = (EncodingInfo)FromEncoding.SelectedItem;
+            EncodingInfo toEncodingInfo = (EncodingInfo)ToEncoding.SelectedItem;
 
-            if (FromEncoding.SelectedItem == ToEncoding.SelectedItem)
+            if (fromEncodingInfo == toEncodingInfo)
             {
-                var dialog = new Windows.UI.Popups.MessageDialog("Selected encodings are the same. Will you continue?");
-                dialog.Commands.Add(new Windows.UI.Popups.UICommand("Yes", null));
-                dialog.Commands.Add(new Windows.UI.Popups.UICommand("No", null, "no"));
+                var dialog = new MessageDialog("Selected encodings are the same. Will you continue?");
+                dialog.Commands.Add(new UICommand("Yes", null));
+                dialog.Commands.Add(new UICommand("No", null, "no"));
                 var result = await dialog.ShowAsync();
                 if ((String)result.Id == "no")
                     return;
             }
+            var fromEncoding = System.Text.Encoding.GetEncoding(fromEncodingInfo.Name);
+            var toEncoding = System.Text.Encoding.GetEncoding(toEncodingInfo.Name);
+
             FileOpenPicker picker = new FileOpenPicker();
             picker.ViewMode = PickerViewMode.List;
             Boolean isErrorOccured = false;
@@ -313,35 +349,46 @@ namespace Text_Transcoder
             }
             if (isErrorOccured)
             {
-                await new Windows.UI.Popups.MessageDialog("Invalid file extensions are written in the text box. Keep the format, please").ShowAsync();
+                await new MessageDialog("Invalid file extensions are written in the text box. Keep the format, please").ShowAsync();
+                return;
             }
+
             Boolean bigFileExist = false;
             var files = await picker.PickMultipleFilesAsync();
+            if (files.Count == 0)
+                return;
+
             foreach (StorageFile file in files)
             {
                 using (var stream = await file.OpenAsync(FileAccessMode.Read))
                 {
-                    if (stream.Size >= 4096)
+                    if (stream.Size >= 4194304)//4 * 1024 * 1024 (4MB)
                     {
                         bigFileExist = true;
                         break;
                     }
                 }
             }
-            if (bigFileExist)
+
             {
-                var dialog = new Windows.UI.Popups.MessageDialog("One of the file is bigger than 4MB. There is a possibility that there is the file which is not a text. Will you continue?");
-                dialog.Commands.Add(new Windows.UI.Popups.UICommand("Yes", null));
-                dialog.Commands.Add(new Windows.UI.Popups.UICommand("No", null, "no"));
+                MessageDialog dialog;
+                if (bigFileExist)
+                    dialog = new MessageDialog("WARNING!!!\r\n\r\nOne of the file is bigger than 4MB. There is a possibility that there is the file which is not a text. Will you continue?");
+                else
+                    dialog = new MessageDialog("Conversion will be start immediately. Will you continue?");
+                dialog.Commands.Add(new UICommand("Yes", null));
+                dialog.Commands.Add(new UICommand("No", null, "no"));
                 var result = await dialog.ShowAsync();
                 if ((String)result.Id == "no")
                     return;
             }
 
+
             Parallel.ForEach(files,
                 async delegate(StorageFile file)
                 {
-                    using (var stream = await file.OpenAsync(FileAccessMode.ReadWrite))
+                    Byte[] convertedbytes;
+                    using (var stream = await file.OpenAsync(FileAccessMode.Read))
                     {
                         using (DataReader reader = new DataReader(stream))
                         {
@@ -349,19 +396,46 @@ namespace Text_Transcoder
                             await reader.LoadAsync((UInt32)stream.Size);
                             reader.ReadBytes(bytes);
 
-                            //var euckr = System.Text.Encoding.GetEncoding("EUC-KR");
-                            //var unibytes = System.Text.Encoding.Convert(euckr, System.Text.Encoding.Unicode, bytes);
-                            //UnicodeSAMIDocument = System.Text.Encoding.Unicode.GetString(unibytes, 0, unibytes.Length);
+                            convertedbytes = System.Text.Encoding.Convert(fromEncoding, toEncoding, bytes);
+                        }
+                    }
+                    using (var stream = await file.OpenAsync(FileAccessMode.ReadWrite))
+                    {
+                        using (DataWriter writer = new DataWriter(stream))
+                        {
+                            writer.WriteBytes(convertedbytes);
+                            await writer.StoreAsync();
                         }
                     }
                 });
+            await new MessageDialog(String.Format("Completed the conversion of {0} file(s).", files.Count)).ShowAsync();
         }
 
-        private void EncodingSelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void EncodingSelectionChanged()
         {
             if (FromEncoding.SelectedIndex != -1 && ToEncoding.SelectedIndex != -1)
                 loadButton.IsEnabled = true;
             else loadButton.IsEnabled = false;
+        }
+
+        private void FromEncoding_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (loadCompleted && FromEncoding.SelectedIndex != -1)
+                localSettings.Values["fromEncoding"] = ((EncodingInfo)FromEncoding.SelectedItem).CodePage;
+            EncodingSelectionChanged();
+        }
+
+        private void ToEncoding_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (loadCompleted && ToEncoding.SelectedIndex != -1)
+                localSettings.Values["toEncoding"] = ((EncodingInfo)ToEncoding.SelectedItem).CodePage;
+            EncodingSelectionChanged();
+        }
+
+        private void fileExtensionBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (loadCompleted)
+                localSettings.Values["extensions"] = fileExtensionBox.Text;
         }
     }
 }
