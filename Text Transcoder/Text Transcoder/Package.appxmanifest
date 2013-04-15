@@ -23,7 +23,7 @@
   <Applications>
     <Application Id="App"
         Executable="$targetnametoken$.exe"
-        EntryPoint="Text_Transcoder.App">
+        EntryPoint="BabellessTranscoder.App">
         <VisualElements
             DisplayName="Text Transcoder"
             Logo="Assets\Logo.png"

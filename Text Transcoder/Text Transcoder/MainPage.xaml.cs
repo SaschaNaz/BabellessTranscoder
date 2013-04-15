@@ -20,12 +20,12 @@ using System.Threading.Tasks;
 
 // The Basic Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234237
 
-namespace Text_Transcoder
+namespace BabellessTranscoder
 {
     /// <summary>
     /// A basic page that provides characteristics common to most applications.
     /// </summary>
-    public sealed partial class MainPage : Text_Transcoder.Common.LayoutAwarePage
+    public sealed partial class MainPage : BabellessTranscoder.Common.LayoutAwarePage
     {
         Windows.Storage.ApplicationDataContainer localSettings =
             Windows.Storage.ApplicationData.Current.LocalSettings;

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Text Transcoder", "Text Transcoder\Text Transcoder.csproj", "{842555EE-A082-4A2C-ABD9-B0AAD0103EB0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BabellessTranscoder", "Text Transcoder\BabellessTranscoder.csproj", "{842555EE-A082-4A2C-ABD9-B0AAD0103EB0}"
 EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
@@ -9,7 +9,7 @@ Global
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs33
 		SccLocalPath0 = .
-		SccProjectUniqueName1 = Text\u0020Transcoder\\Text\u0020Transcoder.csproj
+		SccProjectUniqueName1 = Text\u0020Transcoder\\BabellessTranscoder.csproj
 		SccProjectName1 = Text\u0020Transcoder
 		SccLocalPath1 = Text\u0020Transcoder
 	EndGlobalSection

@@ -1,7 +1,7 @@
 ﻿using System;
 using Windows.UI.Xaml.Data;
 
-namespace Text_Transcoder.Common
+namespace BabellessTranscoder.Common
 {
     /// <summary>
     /// Value converter that translates true to false and vice versa.
