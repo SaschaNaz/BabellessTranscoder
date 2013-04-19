@@ -403,6 +403,12 @@ namespace BabellessTranscoder
                     {
                         using (DataWriter writer = new DataWriter(stream))
                         {
+                            if (toEncoding.WebName == "utf-8")
+                                writer.WriteBytes(new Byte[] { 0xEF, 0xBB, 0xBF });
+                            else if (toEncoding.WebName == "utf-16")
+                                writer.WriteBytes(new Byte[] { 0xFF, 0xFE });
+                            else if (toEncoding.WebName == "unicodeFFFE")//utf-16 with big endian
+                                writer.WriteBytes(new Byte[] { 0xFE, 0xFF });
                             writer.WriteBytes(convertedbytes);
                             await writer.StoreAsync();
                         }
